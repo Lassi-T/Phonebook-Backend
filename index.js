@@ -1,4 +1,5 @@
 const express = require('express')
+const { request, response } = require('express')
 const app = express()
 
 const PORT = 3001
@@ -29,6 +30,15 @@ app.get('/api/persons/:id', (request, response) => {
 
 app.get('/api/persons', (request, response) => {
   response.send(persons)
+})
+
+app.get('/info', (request, response) => {
+  response.send(
+    `<div>
+      <p>Phonebook has info of ${persons.length} people</p>
+      <p>${new Date()}</p>
+    </div>`
+  )
 })
 
 app.listen(PORT, () => {
