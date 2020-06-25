@@ -1,7 +1,11 @@
+require('dotenv').config()
 const express = require('express')
 const { request, response } = require('express')
 const morgan = require('morgan')
+const mongoose = require('mongoose')
 const cors = require('cors')
+const Person = require('./models/person')
+
 const app = express()
 
 app.use(express.json())
@@ -36,7 +40,9 @@ const generateId = () => {
 
 // Gets the whole phonebook
 app.get('/api/persons', (request, response) => {
-  response.send(persons)
+  Person.findById(request.params.id).then(person => {
+    response.json(person)
+  })
 })
 
 // Gets a specific person from the phonebook
@@ -59,13 +65,15 @@ app.post('/api/persons', (request, response) => {
       error: 'Name must be unigue',
     })
   }
-  const newPerson = {
+  const Person = new Person({
     name: body.name,
     number: body.number,
     id: generateId(),
-  }
-  persons = persons.concat(newPerson)
-  response.json(newPerson)
+  })
+
+  Person.save().then(savedPerson => {
+    response.json(savedPerson)
+  })
 })
 
 // Delete a contact from the phonebook
@@ -85,7 +93,7 @@ app.get('/info', (request, response) => {
   )
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
