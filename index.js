@@ -40,16 +40,21 @@ const generateId = () => {
 
 // Gets the whole phonebook
 app.get('/api/persons', (request, response) => {
-  Person.findById(request.params.id).then(person => {
-    response.json(person)
+  Person.find({}).then(persons => {
+    response.json(persons.map(person => person.toJSON()))
   })
 })
 
 // Gets a specific person from the phonebook
 app.get('/api/persons/:id', (request, response) => {
+  /*
   const id = Number(request.params.id)
   const person = persons.find((person) => person.id === id)
   person ? response.json(person) : response.status(404).end()
+  */
+  Person.findById(request.params.id).then(person => {
+    response.json(person.toJSON())
+  })
 })
 
 // Add a new contact to the phonebook
