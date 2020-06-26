@@ -1,8 +1,6 @@
 require('dotenv').config()
 const express = require('express')
-const { request, response } = require('express')
 const morgan = require('morgan')
-const mongoose = require('mongoose')
 const cors = require('cors')
 const Person = require('./models/person')
 
@@ -47,13 +45,8 @@ app.get('/api/persons', (request, response) => {
 
 // Gets a specific person from the phonebook
 app.get('/api/persons/:id', (request, response) => {
-  /*
-  const id = Number(request.params.id)
-  const person = persons.find((person) => person.id === id)
-  person ? response.json(person) : response.status(404).end()
-  */
   Person.findById(request.params.id).then(person => {
-    response.json(person.toJSON())
+    person ? response.json(person) : response.status(404).end()
   })
 })
 
@@ -70,14 +63,14 @@ app.post('/api/persons', (request, response) => {
       error: 'Name must be unigue',
     })
   }
-  const Person = new Person({
-    name: body.name,
-    number: body.number,
+  const newPerson = new newPerson({
+    name: request.body.name,
+    number: request.body.number,
     id: generateId(),
   })
 
-  Person.save().then(savedPerson => {
-    response.json(savedPerson)
+  newPerson.save().then(savedPerson => {
+    response.json(savedPerson.toJSON())
   })
 })
 
