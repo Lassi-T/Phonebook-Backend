@@ -13,24 +13,6 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms - 
 
 morgan.token('body', function (request) {return JSON.stringify(request.body)})
 
-let persons = [
-  {
-    name: 'Arto Hellas',
-    number: '040-123456',
-    id: 1,
-  },
-  {
-    name: 'Ada Lovelace',
-    number: '39-44-5323523',
-    id: 2,
-  },
-  {
-    name: 'Dan Abramov',
-    number: '12-43-234345',
-    id: 3,
-  },
-]
-
 // Used to get a random id
 const generateId = () => {
   Math.floor(Math.random() * Math.floor(1000000))
@@ -76,9 +58,9 @@ app.post('/api/persons', (request, response) => {
 
 // Delete a contact from the phonebook
 app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  persons = persons.filter((person) => person.id !== id)
-  response.status(204).end()
+  Person.findByIdAndRemove(request.params.id).then(() => {
+    response.status(204).end()
+  })
 })
 
 // Renders info for the phonebook
@@ -86,7 +68,7 @@ app.get('/info', (request, response) => {
   response.send(
     `<div>
       <p>Phonebook has info of ${persons.length} people</p>
-      <p>${new Date()}</p>
+      <p>Request received on ${new Date()}</p>
     </div>`
   )
 })
