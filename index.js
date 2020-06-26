@@ -63,9 +63,9 @@ app.post('/api/persons', (request, response) => {
       error: 'Name must be unigue',
     })
   }
-  const newPerson = new newPerson({
-    name: request.body.name,
-    number: request.body.number,
+  const newPerson = new Person({
+    name: body.name,
+    number: body.number,
     id: generateId(),
   })
 
