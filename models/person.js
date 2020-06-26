@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 
 const url = process.env.MONGODB_URI
+console.log(process.env.MONGODB_URI, process.env.PORT)
 
 console.log('Connection to', url)
 
