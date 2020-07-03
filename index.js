@@ -15,7 +15,8 @@ morgan.token('body', function (request) {return JSON.stringify(request.body)})
 
 // Used to get a random id
 const generateId = () => {
-  Math.floor(Math.random() * Math.floor(1000000))
+  const max = 1000000
+  Math.floor(Math.random() * Math.floor(max))
 }
 
 // Gets the whole phonebook
@@ -35,16 +36,26 @@ app.get('/api/persons/:id', (request, response) => {
 // Add a new contact to the phonebook
 app.post('/api/persons', (request, response) => {
   const body = request.body
-  if (!body.name || !body.number) {
+
+  if (!body.name) {
     return response.status(400).json({
-      error: 'Content missing',
+      error: 'Name missing',
     })
   }
+  if (!body.number) {
+    return response.status(400).json({
+      error: 'Number missing'
+    })
+  }
+  
+  /*
   if (persons.find((person) => person.name === body.name)) {
     return response.status(403).json({
       error: 'Name must be unigue',
     })
   }
+  */
+
   const newPerson = new Person({
     name: body.name,
     number: body.number,
@@ -52,7 +63,7 @@ app.post('/api/persons', (request, response) => {
   })
 
   newPerson.save().then(savedPerson => {
-    response.json(savedPerson.toJSON())
+    response.json(savedPerson)
   })
 })
 
