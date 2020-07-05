@@ -1,19 +1,12 @@
-require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+
+require('dotenv').config()
+
 const Person = require('./models/person')
 
 const app = express()
-
-app.use(express.static('build'))
-app.use(express.json())
-app.use(cors())
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms - :body'))
-
-morgan.token('body', function (request) {
-  return JSON.stringify(request.body)
-})
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({
@@ -33,14 +26,21 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
-app.use(unknownEndpoint)
-app.use(errorHandler)
+morgan.token('body', function (request) {
+  return JSON.stringify(request.body)
+})
+
+app.use(express.static('build'))
+app.use(express.json())
+app.use(cors())
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms - :body'))
 
 // Gets the whole phonebook
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
   Person.find({}).then((persons) => {
     response.json(persons.map((person) => person.toJSON()))
   })
+  .catch(error => next(error))
 })
 
 // Gets a specific person from the phonebook
@@ -115,7 +115,10 @@ app.get('/info', (request, response) => {
   )
 })
 
-const PORT = process.env.PORT
+app.use(unknownEndpoint)
+app.use(errorHandler)
+
+const PORT = process.env.PORT || 3001
 
 app.listen(PORT || 3001, () => {
   console.log(`Server running on port ${PORT}`)
