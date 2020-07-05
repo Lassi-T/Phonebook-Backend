@@ -6,32 +6,57 @@ const Person = require('./models/person')
 
 const app = express()
 
-app.use(express.json())
 app.use(express.static('build'))
+app.use(express.json())
 app.use(cors())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms - :body'))
 
-morgan.token('body', function (request) {return JSON.stringify(request.body)})
+morgan.token('body', function (request) {
+  return JSON.stringify(request.body)
+})
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({
+    error: 'Unknown endpoint'
+  })
+}
+
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'Malformatted id' })
+  } 
+  else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
+  next(error)
+}
+
+app.use(unknownEndpoint)
+app.use(errorHandler)
+
+// Gets the whole phonebook
+app.get('/api/persons', (request, response) => {
+  Person.find({}).then((persons) => {
+    response.json(persons.map((person) => person.toJSON()))
+  })
+})
+
+// Gets a specific person from the phonebook
+app.get('/api/persons/:id', (request, response, next) => {
+  Person.findById(request.params.id)
+    .then((person) => {
+      person ? response.json(person) : response.status(404).end()
+    })
+    .catch((error) => next(error))
+})
 
 // Used to get a random id
 const generateId = () => {
   const max = 1000000
   Math.floor(Math.random() * Math.floor(max))
 }
-
-// Gets the whole phonebook
-app.get('/api/persons', (request, response) => {
-  Person.find({}).then(persons => {
-    response.json(persons.map(person => person.toJSON()))
-  })
-})
-
-// Gets a specific person from the phonebook
-app.get('/api/persons/:id', (request, response) => {
-  Person.findById(request.params.id).then(person => {
-    person ? response.json(person) : response.status(404).end()
-  })
-})
 
 // Add a new contact to the phonebook
 app.post('/api/persons', (request, response) => {
@@ -44,17 +69,9 @@ app.post('/api/persons', (request, response) => {
   }
   if (!body.number) {
     return response.status(400).json({
-      error: 'Number missing'
+      error: 'Number missing',
     })
   }
-  
-  /*
-  if (persons.find((person) => person.name === body.name)) {
-    return response.status(403).json({
-      error: 'Name must be unigue',
-    })
-  }
-  */
 
   const newPerson = new Person({
     name: body.name,
@@ -62,9 +79,23 @@ app.post('/api/persons', (request, response) => {
     id: generateId(),
   })
 
-  newPerson.save().then(savedPerson => {
+  newPerson.save().then((savedPerson) => {
     response.json(savedPerson)
   })
+})
+
+// Update existing person in phonebook
+app.put('/api/persons/:id', (request, response, next) => {
+  const body = request.body
+  const updatedPerson = {
+    name: body.name,
+    number: body.number,
+  }
+  Person.findByIdAndUpdate(request.params.id, updatedPerson, {new: true})
+    .then(result => {
+      response.json(result.toJSON())
+    })
+    .catch(error => next(error))
 })
 
 // Delete a contact from the phonebook
