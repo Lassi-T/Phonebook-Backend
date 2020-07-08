@@ -82,6 +82,7 @@ app.post('/api/persons', (request, response) => {
   newPerson.save().then((savedPerson) => {
     response.json(savedPerson)
   })
+  .catch(error => next(error))
 })
 
 // Update existing person in phonebook
