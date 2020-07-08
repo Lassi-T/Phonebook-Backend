@@ -59,7 +59,7 @@ const generateId = () => {
 }
 
 // Add a new contact to the phonebook
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
   if (!body.name) {
