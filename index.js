@@ -39,8 +39,7 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms - 
 app.get('/api/persons', (request, response, next) => {
   Person.find({}).then((persons) => {
     response.json(persons.map((person) => person.toJSON()))
-  })
-  .catch(error => next(error))
+  }).catch(error => next(error))
 })
 
 // Gets a specific person from the phonebook
@@ -81,8 +80,7 @@ app.post('/api/persons', (request, response, next) => {
 
   newPerson.save().then((savedPerson) => {
     response.json(savedPerson)
-  })
-  .catch(error => next(error))
+  }).catch(error => next(error))
 })
 
 // Update existing person in phonebook
@@ -108,12 +106,14 @@ app.delete('/api/persons/:id', (request, response) => {
 
 // Renders info for the phonebook
 app.get('/info', (request, response) => {
-  response.send(
-    `<div>
-      <p>Phonebook has info of ${persons.length} people</p>
-      <p>Request received on ${new Date()}</p>
-    </div>`
-  )
+  Person.count({}).then(count => {
+    let info =  
+      `<div>
+        <p>Phonebook has info of ${count} people</p>
+        <p>Request received on ${new Date()}</p>
+      </div>`
+    response.send(info)
+  })
 })
 
 app.use(unknownEndpoint)
